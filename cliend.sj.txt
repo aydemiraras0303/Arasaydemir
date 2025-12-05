@@ -1,0 +1,98 @@
+const socket = io();
+
+let canvas = document.getElementById("game");
+let ctx = canvas.getContext("2d");
+
+let players = {};
+let me = { x: 400, y: 300, speed: 4, money: 0, task: "" };
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// Chat
+const chatInput = document.getElementById("chatInput");
+const messagesDiv = document.getElementById("messages");
+
+chatInput.addEventListener("keydown", e => {
+    if(e.key === "Enter" && chatInput.value.trim() !== "") {
+        socket.emit("chatMessage", chatInput.value);
+        chatInput.value = "";
+    }
+});
+
+socket.on("chatMessage", data => {
+    const div = document.createElement("div");
+    div.textContent = data.name + ": " + data.msg;
+    messagesDiv.appendChild(div);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+// Player events
+socket.on("currentPlayers", data => {
+    players = data;
+});
+
+socket.on("newPlayer", data => {
+    players[data.id] = data;
+});
+
+socket.on("playerMoved", data => {
+    players = data;
+});
+
+socket.on("playerDisconnected", id => {
+    delete players[id];
+});
+
+socket.on("playerUpdated", data => {
+    if(players[data.id]) players[data.id] = data;
+});
+
+// Game loop
+function update() {
+    if(keys["ArrowUp"]) me.y -= me.speed;
+    if(keys["ArrowDown"]) me.y += me.speed;
+    if(keys["ArrowLeft"]) me.x -= me.speed;
+    if(keys["ArrowRight"]) me.x += me.speed;
+
+    socket.emit("move", { x: me.x, y: me.y });
+}
+
+function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Harita basit (yeşil alan)
+    ctx.fillStyle = "#6c3";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(let id in players) {
+        let p = players[id];
+        ctx.fillStyle = id === socket.id ? "#0f0" : "#fff";
+        ctx.fillRect(p.x, p.y, 40, 40);
+
+        ctx.fillStyle = "#000";
+        ctx.fillText(p.name, p.x, p.y - 10);
+    }
+
+    // UI
+    if(players[socket.id]) {
+        document.getElementById("money").textContent = players[socket.id].money;
+        document.getElementById("task").textContent = players[socket.id].task;
+    }
+}
+
+// Görev tamamlama tuşu
+document.addEventListener("keydown", e => {
+    if(e.key === " ") { // Space ile görev tamamla
+        socket.emit("completeTask");
+    }
+});
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();

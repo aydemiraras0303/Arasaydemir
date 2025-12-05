@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PKXD Clone</title>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background: #aaf;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #ace;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #000;
+            font-family: sans-serif;
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #chat {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.7);
+            padding: 5px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        #chat input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="game" width="800" height="600"></canvas>
+
+<div id="ui">
+    <div>Para: <span id="money">0</span></div>
+    <div>Görev: <span id="task">Hiç görev yok</span></div>
+</div>
+
+<div id="chat">
+    <div id="messages"></div>
+    <input id="chatInput" type="text" placeholder="Mesaj yaz...">
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>
